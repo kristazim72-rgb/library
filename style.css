@@ -163,3 +163,31 @@ dialog {
   background-color: #f1f5f9;
   color: #0f172a;
 }
+
+#book-form .field {
+  display: flex;
+  flex-direction: column;
+}
+
+.error {
+  font-size: 0.8rem;
+  color: #ef4444;
+  min-height: 1.2em;
+  margin-top: 0.25rem;
+}
+
+#book-form input.invalid {
+  border-color: #ef4444;
+}
+
+#book-form input.invalid:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+#book-form input.valid {
+  border-color: #10b981;
+}
+
+#book-form input.valid:focus {
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
