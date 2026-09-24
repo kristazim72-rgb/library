@@ -7,7 +7,7 @@ class Book {
     this.read = Boolean(read);
   }
 
-  info() {S
+  info() {
     const readStatus = this.read ? "already read" : "not read yet";
     return `${this.title} by ${this.author}, ${this.pages} pages, ${readStatus}`;
   }
@@ -49,30 +49,101 @@ class LibraryUI {
     this.closeDialogBtn = document.querySelector("#close-dialog");
     this.form = document.querySelector("#book-form");
 
+    // Inputs to validate
+    this.titleInput = document.querySelector("#title");
+    this.authorInput = document.querySelector("#author");
+    this.pagesInput = document.querySelector("#pages");
+
     this.bindEvents();
     this.render();
   }
 
   bindEvents() {
     this.newBookBtn.addEventListener("click", () => this.dialog.showModal());
-    this.closeDialogBtn.addEventListener("click", () => this.dialog.close());
+    this.closeDialogBtn.addEventListener("click", () => this.closeDialog());
 
     this.form.addEventListener("submit", (e) => this.handleSubmit(e));
     this.container.addEventListener("click", (e) => this.handleCardClick(e));
+
+    // Live validation as the user types/inputs data
+    [this.titleInput, this.authorInput, this.pagesInput].forEach((input) => {
+      input.addEventListener("input", () => this.validateField(input));
+    });
+  }
+
+  validateField(input) {
+    const errorSpan = input.nextElementSibling;
+
+    if (input.validity.valid) {
+      if (errorSpan && errorSpan.classList.contains("error")) {
+        errorSpan.textContent = "";
+      }
+      input.classList.remove("invalid");
+      input.classList.add("valid");
+      return true;
+    }
+
+    // Custom Error Messages
+    if (input.id === "title") {
+      if (input.validity.valueMissing) {
+        errorSpan.textContent = "The book title must be filled!";
+      } else if (input.validity.tooShort) {
+        errorSpan.textContent = "Title must be at least 2 characters.";
+      }
+    } else if (input.id === "author") {
+      if (input.validity.valueMissing) {
+        errorSpan.textContent = "The author name must be filled!";
+      } else if (input.validity.tooShort) {
+        errorSpan.textContent = "Author name must be at least 2 characters.";
+      }
+    } else if (input.id === "pages") {
+      if (input.validity.valueMissing) {
+        errorSpan.textContent = "Please enter the number of pages.";
+      } else if (input.validity.rangeUnderflow) {
+        errorSpan.textContent = "Page count must be at least 1.";
+      }
+    }
+
+    input.classList.remove("valid");
+    input.classList.add("invalid");
+    return false;
   }
 
   handleSubmit(e) {
     e.preventDefault();
 
-    const title = document.querySelector("#title").value.trim();
-    const author = document.querySelector("#author").value.trim();
-    const pages = document.querySelector("#pages").value;
+    // Validate all fields on submit
+    const isTitleValid = this.validateField(this.titleInput);
+    const isAuthorValid = this.validateField(this.authorInput);
+    const isPagesValid = this.validateField(this.pagesInput);
+
+    if (!isTitleValid || !isAuthorValid || !isPagesValid) {
+      return; // Block submission if errors exist
+    }
+
+    const title = this.titleInput.value.trim();
+    const author = this.authorInput.value.trim();
+    const pages = this.pagesInput.value;
     const read = document.querySelector("#read").checked;
 
     this.library.addBook(title, author, pages, read);
     this.render();
 
+    this.closeDialog();
+  }
+
+  closeDialog() {
     this.form.reset();
+    
+    // Clear validation states and error text when closing
+    [this.titleInput, this.authorInput, this.pagesInput].forEach((input) => {
+      input.classList.remove("valid", "invalid");
+      const errorSpan = input.nextElementSibling;
+      if (errorSpan && errorSpan.classList.contains("error")) {
+        errorSpan.textContent = "";
+      }
+    });
+
     this.dialog.close();
   }
 
